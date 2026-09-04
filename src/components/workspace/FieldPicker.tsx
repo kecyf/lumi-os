@@ -97,8 +97,8 @@ export function FieldPicker({
   }, [schema, currentObjectId, objectId, mode, path, trimmed]);
 
   const placeholder = path
-    ? `Search ${objectLabel(schema, currentObjectId)} fields…`
-    : `Search ${objectLabel(schema, objectId)} fields…`;
+    ? `Search a ${objectLabel(schema, currentObjectId)} attribute…`
+    : `Search a ${objectLabel(schema, objectId)} attribute…`;
 
   return (
     <div>

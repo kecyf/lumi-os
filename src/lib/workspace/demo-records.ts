@@ -122,3 +122,99 @@ export const DEMO_PEOPLE_RECORDS: WorkspaceRecord[] = [
     updated_at: '2026-03-08T08:55:00.000Z',
   },
 ];
+
+export const DEMO_COMPANY_RECORDS: WorkspaceRecord[] = [
+  {
+    id: 'c1',
+    values: {
+      name: 'Analytical Engines',
+      domain: 'analytical.example',
+      category: 'hardware',
+      status: 'active',
+    },
+    created_at: '2025-09-01T10:00:00.000Z',
+    updated_at: '2026-03-01T08:30:00.000Z',
+  },
+  {
+    id: 'c2',
+    values: {
+      name: 'Compilers Inc',
+      domain: 'compilers.example',
+      category: 'software',
+      status: 'active',
+    },
+    created_at: '2025-08-12T12:00:00.000Z',
+    updated_at: '2026-02-18T14:20:00.000Z',
+  },
+  {
+    id: 'c3',
+    values: {
+      name: 'Bletchley Labs',
+      domain: 'bletchley.example',
+      category: 'research',
+      status: 'churned',
+    },
+    created_at: '2025-05-20T09:00:00.000Z',
+    updated_at: '2025-08-04T16:45:00.000Z',
+  },
+  {
+    id: 'c4',
+    values: {
+      name: 'Orbital Math',
+      domain: 'orbital.example',
+      category: 'research',
+      status: 'active',
+    },
+    created_at: '2025-07-08T11:30:00.000Z',
+    updated_at: '2026-01-22T10:10:00.000Z',
+  },
+  {
+    id: 'c5',
+    values: {
+      name: 'Web Foundation',
+      domain: 'webfoundation.example',
+      category: 'software',
+      status: 'new',
+    },
+    created_at: '2026-02-01T08:00:00.000Z',
+    updated_at: '2026-03-10T09:15:00.000Z',
+  },
+  {
+    id: 'c6',
+    values: {
+      name: 'Apollo Software',
+      domain: 'apollo.example',
+      category: 'software',
+      status: 'active',
+    },
+    created_at: '2025-06-18T07:45:00.000Z',
+    updated_at: '2026-02-02T18:00:00.000Z',
+  },
+  {
+    id: 'c7',
+    values: {
+      name: 'Kernel Corp',
+      domain: 'kernel.example',
+      category: 'software',
+      status: 'new',
+    },
+    created_at: '2026-01-04T13:00:00.000Z',
+    updated_at: '2026-03-05T11:40:00.000Z',
+  },
+  {
+    id: 'c8',
+    values: {
+      name: 'Spanning Tree LLC',
+      domain: 'spanning.example',
+      category: 'hardware',
+      status: 'churned',
+    },
+    created_at: '2025-04-22T15:20:00.000Z',
+    updated_at: '2025-12-01T12:00:00.000Z',
+  },
+];
+
+export function demoRecordsFor(objectId: string): WorkspaceRecord[] {
+  if (objectId === 'companies') return DEMO_COMPANY_RECORDS;
+  return DEMO_PEOPLE_RECORDS;
+}

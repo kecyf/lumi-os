@@ -52,14 +52,9 @@ export function CreateTrigger({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={cn(
-        TOOLBAR_CHIP,
-        'cursor-pointer gap-1.5 px-2.5 text-xs font-medium text-foreground',
-        className
-      )}
+      className={cn(TOOLBAR_CHIP, 'cursor-pointer px-2', className)}
     >
       <Plus className="size-3.5 text-muted-foreground" />
-      <span>{label}</span>
     </button>
   );
 }

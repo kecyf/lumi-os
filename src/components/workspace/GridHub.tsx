@@ -12,69 +12,52 @@ import {
 import { objectById } from '@/lib/workspace/field-tree';
 import { queryRecords } from '@/lib/workspace/filter-records';
 import type { WorkspaceQueryClause } from '@/lib/workspace/query-clauses';
-import { formatRecordDate, isRecordSystemField } from '@/lib/workspace/system-fields';
-import type { ObjectDef, WorkspaceRecord, WorkspaceSchema } from '@/lib/workspace/types';
+import type { WorkspaceRecord, WorkspaceSchema } from '@/lib/workspace/types';
+import {
+  filtersFromView,
+  type SavedView,
+  type ViewFilters,
+} from '@/lib/workspace/views';
 import { ColumnsPopover } from './ColumnsPopover';
 import { FilterMenu } from './FilterMenu';
+import { RecordFooter } from './RecordFooter';
 import { RecordTable } from './RecordTable';
 import { SortPopover } from './SortPopover';
+import { CreateTrigger, GroupTrigger } from './ToolbarTriggers';
+import { ToolbarSearch } from './ToolbarSearch';
+import { ViewPicker, defaultViewFor } from './ViewPicker';
+import { renderCellValue } from './record-cells';
 
 type GridHubProps = {
   schema: WorkspaceSchema;
   objectId: string;
   records: WorkspaceRecord[];
+  views: SavedView[];
+  onViewsChange: (views: SavedView[]) => void;
+  onCreate: () => void;
+  onOpenCommand: () => void;
 };
 
-function optionLabels(object: ObjectDef, fieldId: string): Map<string, string> {
-  return new Map(
-    object.fields.find((field) => field.id === fieldId)?.options?.map((option) => [
-      option.value,
-      option.label,
-    ]) ?? []
-  );
-}
-
-function renderCellValue(object: ObjectDef, columnId: string, record: WorkspaceRecord) {
-  const field = object.fields.find((item) => item.id === columnId);
-  const value = isRecordSystemField(columnId)
-    ? record[columnId]
-    : record.values[columnId];
-
-  if (value == null || value === '') {
-    return <span className="text-muted-foreground">—</span>;
-  }
-
-  if (field?.type === 'select') {
-    const label = optionLabels(object, columnId).get(String(value)) ?? String(value);
-    return (
-      <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-        {label}
-      </span>
-    );
-  }
-
-  if (field?.type === 'date' || isRecordSystemField(columnId)) {
-    return <span className="text-sm">{formatRecordDate(String(value))}</span>;
-  }
-
-  if (field?.type === 'boolean' || typeof value === 'boolean') {
-    return <span className="text-sm">{value ? 'Yes' : 'No'}</span>;
-  }
-
-  return (
-    <span className="truncate text-sm font-medium text-foreground">{String(value)}</span>
-  );
-}
-
-export function GridHub({ schema, objectId, records: sourceRecords }: GridHubProps) {
+export function GridHub({
+  schema,
+  objectId,
+  records: sourceRecords,
+  views,
+  onViewsChange,
+  onCreate,
+  onOpenCommand,
+}: GridHubProps) {
   const object = objectById(schema, objectId);
   const fallbackColumns = object ? defaultVisibleColumns(object) : [];
   const defaultSort = object?.primaryField ?? 'name';
+  const defaultView = object ? defaultViewFor(object) : null;
 
   const [clauses, setClauses] = useState<WorkspaceQueryClause[]>([]);
   const [sort, setSort] = useState(defaultSort);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [columns, setColumns] = useState<string[]>(fallbackColumns);
+  const [search, setSearch] = useState('');
+  const [activeViewId, setActiveViewId] = useState(defaultView?.id ?? '');
 
   const catalog = object ? buildColumnCatalog(object) : [];
   const visibleColumns = object ? normalizeObjectColumns(object, columns) : [];
@@ -88,14 +71,40 @@ export function GridHub({ schema, objectId, records: sourceRecords }: GridHubPro
   const records = useMemo(
     () =>
       object
-        ? queryRecords(schema, objectId, sourceRecords, clauses, { path: sort, dir: sortDir })
+        ? queryRecords(
+            schema,
+            objectId,
+            sourceRecords,
+            clauses,
+            { path: sort, dir: sortDir },
+            search
+          )
         : [],
-    [object, schema, objectId, sourceRecords, clauses, sort, sortDir]
+    [object, schema, objectId, sourceRecords, clauses, sort, sortDir, search]
   );
 
-  if (!object) {
+  if (!object || !defaultView) {
     return <p className="px-4 py-6 text-sm text-muted-foreground">Object not found.</p>;
   }
+
+  const activeView =
+    views.find((view) => view.id === activeViewId) ??
+    (activeViewId === defaultView.id ? defaultView : defaultView);
+
+  const currentFilters: ViewFilters = {
+    clauses,
+    sorts: [{ path: sort, dir: sortDir }],
+    columns: visibleColumns,
+  };
+
+  const applyView = (view: SavedView) => {
+    const filters = filtersFromView(view);
+    setActiveViewId(view.id);
+    setClauses(filters.clauses ?? []);
+    setSort(filters.sorts?.[0]?.path ?? defaultSort);
+    setSortDir(filters.sorts?.[0]?.dir ?? 'asc');
+    setColumns(normalizeObjectColumns(object, filters.columns ?? fallbackColumns));
+  };
 
   const handleSort = (column: string) => {
     if (sort === column) {
@@ -106,33 +115,58 @@ export function GridHub({ schema, objectId, records: sourceRecords }: GridHubPro
     setSortDir('asc');
   };
 
+  const searchPlaceholder = `Search ${object.fields
+    .slice(0, 2)
+    .map((field) => field.name.toLowerCase())
+    .join(', ')}…`;
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2">
-        <FilterMenu
-          schema={schema}
-          objectId={objectId}
-          clauses={clauses}
-          onChange={setClauses}
-        />
-        <SortPopover
-          schema={schema}
-          objectId={objectId}
-          sort={sort}
-          sortDir={sortDir}
-          defaultSort={defaultSort}
-          defaultDir="asc"
-          onSortChange={setSort}
-          onDirChange={setSortDir}
-        />
-        <ColumnsPopover
-          columns={catalog}
-          visibleColumns={visibleColumns}
-          onChange={(next) => setColumns(normalizeObjectColumns(object, next))}
-        />
-        <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-          {records.length} record{records.length === 1 ? '' : 's'}
-        </span>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex h-[52px] shrink-0 items-center justify-between gap-3 px-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <ViewPicker
+            object={object}
+            views={views}
+            activeViewId={activeViewId}
+            currentFilters={currentFilters}
+            onSelect={applyView}
+            onCreate={(view) => {
+              onViewsChange([...views, view]);
+              setActiveViewId(view.id);
+            }}
+          />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <ColumnsPopover
+            columns={catalog}
+            visibleColumns={visibleColumns}
+            onChange={(next) => setColumns(normalizeObjectColumns(object, next))}
+          />
+          <FilterMenu
+            schema={schema}
+            objectId={objectId}
+            clauses={clauses}
+            onChange={setClauses}
+          />
+          <GroupTrigger />
+          <SortPopover
+            schema={schema}
+            objectId={objectId}
+            sort={sort}
+            sortDir={sortDir}
+            defaultSort={defaultSort}
+            defaultDir="asc"
+            onSortChange={setSort}
+            onDirChange={setSortDir}
+          />
+          <CreateTrigger label="New record" onClick={onCreate} />
+          <ToolbarSearch
+            value={search}
+            onChange={setSearch}
+            placeholder={searchPlaceholder}
+            onOpenCommand={onOpenCommand}
+          />
+        </div>
       </div>
 
       <RecordTable
@@ -151,6 +185,16 @@ export function GridHub({ schema, objectId, records: sourceRecords }: GridHubPro
         rowKey={(record) => record.id}
         emptyMessage="No records match your filters"
         renderCell={(columnId, record) => renderCellValue(object, columnId, record)}
+      />
+
+      <RecordFooter
+        loadedCount={records.length}
+        totalCount={sourceRecords.length}
+        entitySingular={object.name.replace(/s$/, '').toLowerCase()}
+        entityPlural={object.name.toLowerCase()}
+        viewLabel={activeView.name}
+        viewIcon={activeView.icon}
+        viewColor={activeView.iconColor}
       />
     </div>
   );

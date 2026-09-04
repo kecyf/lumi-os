@@ -134,12 +134,33 @@ export function sortRecords(
   });
 }
 
+export function searchRecords(
+  records: WorkspaceRecord[],
+  query: string
+): WorkspaceRecord[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return records;
+  return records.filter((record) => {
+    const haystack = [
+      record.id,
+      ...Object.values(record.values).map((value) => String(value ?? '')),
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(needle);
+  });
+}
+
 export function queryRecords(
   schema: WorkspaceSchema,
   objectId: string,
   records: WorkspaceRecord[],
   clauses: readonly WorkspaceQueryClause[],
-  sort: WorkspaceQuerySort | null
+  sort: WorkspaceQuerySort | null,
+  search = ''
 ): WorkspaceRecord[] {
-  return sortRecords(filterRecords(schema, objectId, records, clauses), sort);
+  return sortRecords(
+    searchRecords(filterRecords(schema, objectId, records, clauses), search),
+    sort
+  );
 }
