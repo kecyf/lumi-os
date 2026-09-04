@@ -1,6 +1,8 @@
+import { LUMI_SUPABASE_URL } from './project';
+
 export function supabaseUrl(): string | undefined {
   const value = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  return value || undefined;
+  return value || LUMI_SUPABASE_URL;
 }
 
 export function supabasePublishableKey(): string | undefined {

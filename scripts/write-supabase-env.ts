@@ -2,6 +2,7 @@
 
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { LUMI_SUPABASE_PROJECT_REF, LUMI_SUPABASE_URL } from '../src/lib/supabase/project';
 
 type ApiKeyRow = {
   name?: string;
@@ -37,11 +38,10 @@ function pickKey(rows: ApiKeyRow[], testers: Array<(row: ApiKeyRow, value: strin
   return '';
 }
 
-const projectRef = process.env.SUPABASE_PROJECT_REF ?? process.env.SUPABASE_PROJECT_ID ?? '';
-if (!projectRef) {
-  console.error('SUPABASE_PROJECT_REF is required to write .env.local');
-  process.exit(1);
-}
+const projectRef =
+  process.env.SUPABASE_PROJECT_REF ??
+  process.env.SUPABASE_PROJECT_ID ??
+  LUMI_SUPABASE_PROJECT_REF;
 
 const raw = await Bun.stdin.text();
 const rows = asRows(JSON.parse(raw));
@@ -63,7 +63,7 @@ if (!publishable || !secret) {
   process.exit(1);
 }
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? `https://${projectRef}.supabase.co`;
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? LUMI_SUPABASE_URL;
 const contents = [
   `NEXT_PUBLIC_SUPABASE_URL=${url}`,
   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${publishable}`,

@@ -4,10 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-PROJECT_REF="${SUPABASE_PROJECT_REF:-${SUPABASE_PROJECT_ID:-}}"
+# Hosted Lumi OS project. Override with SUPABASE_PROJECT_REF if needed.
+DEFAULT_PROJECT_REF="yyjyylhsubbvtqixbnqe"
+PROJECT_REF="${SUPABASE_PROJECT_REF:-${SUPABASE_PROJECT_ID:-$DEFAULT_PROJECT_REF}}"
 
-if [[ -z "${SUPABASE_ACCESS_TOKEN:-}" || -z "$PROJECT_REF" || -z "${SUPABASE_DB_PASSWORD:-}" ]]; then
-  echo "Supabase secrets are not set; skipping link (in-memory demo mode)."
+if [[ -z "${SUPABASE_ACCESS_TOKEN:-}" || -z "${SUPABASE_DB_PASSWORD:-}" ]]; then
+  echo "Supabase token or database password is not set; skipping link (in-memory demo mode)."
   exit 0
 fi
 
