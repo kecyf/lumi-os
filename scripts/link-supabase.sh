@@ -20,8 +20,9 @@ CLI=(bun x supabase --agent yes --yes)
 echo "Linking Supabase project ${PROJECT_REF}..."
 "${CLI[@]}" link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 
-echo "Pushing workspace kernel migrations..."
-"${CLI[@]}" db push --linked --password "$SUPABASE_DB_PASSWORD"
+# The hosted project already has its own migration history from local work.
+# Do not `db push` on boot: remote versions are missing from this repo and
+# the CLI refuses a legacy push. Apply schema separately after histories match.
 
 echo "Materializing Next.js env from project API keys..."
 "${CLI[@]}" projects api-keys --project-ref "$PROJECT_REF" --reveal --output json \
