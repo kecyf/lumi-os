@@ -20,7 +20,7 @@ Agnostic workspace: objects, properties, views, records.
 ```
 src/lib/workspace/     kernel (schema, clauses, views, column catalog)
 src/components/workspace/   grid chrome
-supabase/              SQL schema (not wired to a project yet)
+supabase/              CLI project + kernel migrations (link in cloud agents)
 ```
 
 Prototype chrome was harvested from `feedcast-io/admin` (`feat/crm-airtable-foundation`) and stripped. When in doubt, rewrite rather than re-couple.

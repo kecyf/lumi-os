@@ -1,5 +1,5 @@
--- Human-readable contract for the Lumi OS kernel.
--- The applied migration is supabase/migrations/20260904172446_workspace_kernel.sql.
+-- Lumi OS v0 — metadata tables + JSONB records.
+-- Applied by `supabase db push` against the linked project.
 
 create table if not exists workspaces (
   id uuid primary key default gen_random_uuid(),
@@ -40,6 +40,7 @@ create table if not exists records (
 );
 
 create index if not exists records_values_gin on records using gin (values);
+create index if not exists records_object_id_idx on records (object_id);
 
 create table if not exists views (
   id uuid primary key default gen_random_uuid(),
@@ -54,3 +55,40 @@ create table if not exists views (
   position int not null default 0,
   created_at timestamptz not null default now()
 );
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists records_set_updated_at on records;
+create trigger records_set_updated_at
+before update on records
+for each row
+execute function public.set_updated_at();
+
+alter table workspaces enable row level security;
+alter table objects enable row level security;
+alter table properties enable row level security;
+alter table records enable row level security;
+alter table views enable row level security;
+
+-- No policies: anon/authenticated cannot read or write through the Data API.
+-- Next.js uses the secret key on the server (bypasses RLS).
+
+revoke all on table workspaces from anon, authenticated;
+revoke all on table objects from anon, authenticated;
+revoke all on table properties from anon, authenticated;
+revoke all on table records from anon, authenticated;
+revoke all on table views from anon, authenticated;
+
+grant all on table workspaces to service_role;
+grant all on table objects to service_role;
+grant all on table properties to service_role;
+grant all on table records to service_role;
+grant all on table views to service_role;
