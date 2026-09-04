@@ -18,9 +18,11 @@ Next.js (App Router) · TypeScript · Tailwind · shadcn/ui · JSONB-ready schem
 
 ## Develop
 
+Requires [Bun](https://bun.sh) (`curl -fsSL https://bun.sh/install | bash`).
+
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 Open `/` — demo workspace, People / Companies, saved views, filter / sort / columns, ⌘K.
