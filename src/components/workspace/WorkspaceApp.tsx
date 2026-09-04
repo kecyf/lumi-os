@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createRecordAction, saveViewsAction } from '@/app/actions/workspace';
 import { useHasMounted } from '@/hooks/use-has-mounted';
 import { objectById } from '@/lib/workspace/field-tree';
+import type { PersistenceSource } from '@/lib/workspace/persist';
 import type { WorkspaceRecord, WorkspaceSchema } from '@/lib/workspace/types';
 import type { SavedView } from '@/lib/workspace/views';
 import { CommandPalette } from './CommandPalette';
@@ -15,11 +17,13 @@ export function WorkspaceApp({
   objectId,
   records: initialRecords,
   views: initialViews,
+  persistence = 'demo',
 }: {
   schema: WorkspaceSchema;
   objectId: string;
   records: WorkspaceRecord[];
   views: SavedView[];
+  persistence?: PersistenceSource;
 }) {
   const object = objectById(schema, objectId);
   const mounted = useHasMounted();
@@ -54,7 +58,12 @@ export function WorkspaceApp({
             objectId={objectId}
             records={records}
             views={views}
-            onViewsChange={setViews}
+            onViewsChange={(next) => {
+              setViews(next);
+              if (persistence === 'supabase') {
+                void saveViewsAction(objectId, next);
+              }
+            }}
             onCreate={() => setCreateOpen(true)}
             onOpenCommand={() => setCommandOpen(true)}
           />
@@ -67,7 +76,16 @@ export function WorkspaceApp({
           open={createOpen}
           onOpenChange={setCreateOpen}
           object={object}
-          onCreate={(record) => setRecords((current) => [record, ...current])}
+          onCreate={(record) => {
+            if (persistence !== 'supabase') {
+              setRecords((current) => [record, ...current]);
+              return;
+            }
+            void createRecordAction(objectId, record.values).then((result) => {
+              if (!result.ok) return;
+              setRecords((current) => [result.record, ...current]);
+            });
+          }}
         />
       ) : null}
       {mounted ? (
