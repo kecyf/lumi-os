@@ -28,6 +28,8 @@ export interface SavedView {
   visibility?: ViewVisibility;
   ownerEmail?: string | null;
   locked?: boolean;
+  icon?: string;
+  iconColor?: string;
 }
 
 export interface ViewAccessOptions {

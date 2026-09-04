@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Modifier } from '@dnd-kit/core';
+import { useHasMounted } from '@/hooks/use-has-mounted';
 import { cn } from '@/lib/utils';
 import type { SortDir } from '@/lib/workspace/views';
 
@@ -32,7 +33,80 @@ export function SortMark({
   );
 }
 
+function HeadShell({
+  className,
+  children,
+  trailing,
+  isDragging,
+  headRef,
+  style,
+  grip,
+  ...props
+}: {
+  className?: string;
+  children: ReactNode;
+  trailing?: ReactNode;
+  isDragging?: boolean;
+  headRef?: (node: HTMLElement | null) => void;
+  style?: ComponentProps<'th'>['style'];
+  grip?: ReactNode;
+} & Omit<ComponentProps<'th'>, 'children' | 'style'>) {
+  return (
+    <th
+      ref={headRef}
+      style={style}
+      className={cn(
+        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground',
+        className,
+        isDragging && 'z-30 opacity-40'
+      )}
+      {...props}
+    >
+      <div className="flex h-7 min-w-0 items-center gap-0.5 rounded-md px-1.5 transition-colors duration-150 group-hover/th:bg-muted group-hover/th:text-foreground">
+        {grip}
+        <div className="min-w-0 flex-1 truncate">{children}</div>
+      </div>
+      {trailing}
+    </th>
+  );
+}
+
 export function SortableHead({
+  columnId,
+  pinned = false,
+  className,
+  children,
+  trailing,
+  ...props
+}: {
+  columnId: string;
+  pinned?: boolean;
+  className?: string;
+  children: ReactNode;
+  trailing?: ReactNode;
+} & Omit<ComponentProps<'th'>, 'children'>) {
+  const mounted = useHasMounted();
+  if (!mounted) {
+    return (
+      <HeadShell className={className} trailing={trailing} {...props}>
+        {children}
+      </HeadShell>
+    );
+  }
+  return (
+    <SortableHeadLive
+      columnId={columnId}
+      pinned={pinned}
+      className={className}
+      trailing={trailing}
+      {...props}
+    >
+      {children}
+    </SortableHeadLive>
+  );
+}
+
+function SortableHeadLive({
   columnId,
   pinned = false,
   className,
@@ -56,21 +130,17 @@ export function SortableHead({
   } = useSortable({ id: columnId, disabled: pinned });
 
   return (
-    <th
-      ref={setNodeRef}
+    <HeadShell
+      headRef={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition ?? 'transform 200ms ease',
       }}
-      className={cn(
-        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground',
-        className,
-        isDragging && 'z-30 opacity-40'
-      )}
-      {...props}
-    >
-      <div className="flex h-7 min-w-0 items-center gap-0.5 rounded-md px-1.5 transition-colors duration-150 group-hover/th:bg-muted group-hover/th:text-foreground">
-        {pinned ? null : (
+      className={className}
+      isDragging={isDragging}
+      trailing={trailing}
+      grip={
+        pinned ? null : (
           <button
             type="button"
             aria-label="Reorder column"
@@ -80,10 +150,11 @@ export function SortableHead({
           >
             <GripVertical className="size-3" />
           </button>
-        )}
-        <div className="min-w-0 flex-1 truncate">{children}</div>
-      </div>
-      {trailing}
-    </th>
+        )
+      }
+      {...props}
+    >
+      {children}
+    </HeadShell>
   );
 }

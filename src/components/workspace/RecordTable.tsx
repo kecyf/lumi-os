@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type ComponentProps,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
@@ -22,6 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Loader2 } from 'lucide-react';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useHasMounted } from '@/hooks/use-has-mounted';
 import { cn } from '@/lib/utils';
 import type { ColumnDef } from '@/lib/workspace/column-catalog';
 import type { SortDir } from '@/lib/workspace/views';
@@ -36,6 +38,15 @@ import {
 } from '@/components/workspace/SortableHead';
 
 const GUTTER_MIN = 40;
+
+function OptionalDnd({
+  enabled,
+  children,
+  ...props
+}: ComponentProps<typeof DndContext> & { enabled: boolean }) {
+  if (!enabled) return children;
+  return <DndContext {...props}>{children}</DndContext>;
+}
 
 function pinnedSurfaceClass(kind: 'head' | 'cell'): string {
   const frozen = 'sticky left-0 border-r border-border bg-background';
@@ -93,6 +104,7 @@ export function RecordTable<TItem, TId extends string>({
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [draggingColumn, setDraggingColumn] = useState<TId | null>(null);
+  const mounted = useHasMounted();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
@@ -132,7 +144,8 @@ export function RecordTable<TItem, TId extends string>({
       aria-busy={loading || loadingMore}
     >
       <div ref={scrollRef} className="h-full overflow-auto">
-        <DndContext
+        <OptionalDnd
+          enabled={mounted}
           sensors={sensors}
           collisionDetection={closestCenter}
           modifiers={[restrictToHorizontalAxis]}
@@ -259,15 +272,17 @@ export function RecordTable<TItem, TId extends string>({
               )}
             </TableBody>
           </table>
-          <DragOverlay>
-            {draggingColumn ? (
-              <div className="rounded-md border bg-background px-2 py-1 text-[11px] font-medium shadow-sm">
-                {catalog.find((item) => item.id === draggingColumn)?.label ??
-                  draggingColumn}
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+          {mounted ? (
+            <DragOverlay>
+              {draggingColumn ? (
+                <div className="rounded-md border bg-background px-2 py-1 text-[11px] font-medium shadow-sm">
+                  {catalog.find((item) => item.id === draggingColumn)?.label ??
+                    draggingColumn}
+                </div>
+              ) : null}
+            </DragOverlay>
+          ) : null}
+        </OptionalDnd>
         {items.length > 0 ? (
           <div
             ref={sentinelRef}

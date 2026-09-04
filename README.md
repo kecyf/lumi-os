@@ -10,7 +10,7 @@ This is a pre-v1 prototype. The first slice is a schema-driven grid.
 
 - Kernel types + JSONB schema draft
 - Grid chrome ported from a private Feedcast admin CRM prototype (generic layer only)
-- Demo object (`people`) rendered locally — no Feedcast schema, no production data
+- Demo objects (`people`, `companies`) on one schema-driven `GridHub` — no Feedcast schema, no production data
 
 ## Stack
 
@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Open `/` — demo workspace, one object, filter / sort / columns.
+Open `/` — demo workspace, People / Companies, saved views, filter / sort / columns, ⌘K.
 
 ## Model
 
