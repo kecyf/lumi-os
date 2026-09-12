@@ -8,13 +8,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/workspace/*.test.ts"
+    "test": "tsx --test src/lib/workspace/*.test.ts",
+    "supabase": "supabase",
+    "supabase:link": "bash scripts/link-supabase.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/ssr": "^0.12.6",
+    "@supabase/supabase-js": "^2.115.0",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "cn": "^0.2.5",
@@ -33,6 +37,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "supabase": "^2.116.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5"

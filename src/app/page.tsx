@@ -1,8 +1,8 @@
 import { WorkspaceApp } from '@/components/workspace/WorkspaceApp';
-import { demoRecordsFor } from '@/lib/workspace/demo-records';
-import { DEMO_SCHEMA, PEOPLE_OBJECT_ID } from '@/lib/workspace/demo-schema';
-import { demoViewsFor } from '@/lib/workspace/demo-views';
 import { objectById } from '@/lib/workspace/field-tree';
+import { loadWorkspace } from '@/lib/workspace/persist';
+
+export const dynamic = 'force-dynamic';
 
 type HomeProps = {
   searchParams: Promise<{ object?: string }>;
@@ -10,15 +10,17 @@ type HomeProps = {
 
 export default async function Home({ searchParams }: HomeProps) {
   const { object: objectParam } = await searchParams;
-  const requested = objectParam ? objectById(DEMO_SCHEMA, objectParam) : null;
-  const objectId = requested?.slug ?? PEOPLE_OBJECT_ID;
+  const snapshot = await loadWorkspace(objectParam);
+  const object = objectById(snapshot.schema, snapshot.objectId);
+  const objectId = object?.slug ?? snapshot.objectId;
 
   return (
     <WorkspaceApp
-      schema={DEMO_SCHEMA}
+      schema={snapshot.schema}
       objectId={objectId}
-      records={demoRecordsFor(objectId)}
-      views={demoViewsFor(objectId)}
+      records={snapshot.records}
+      views={snapshot.views}
+      persistence={snapshot.source}
     />
   );
 }

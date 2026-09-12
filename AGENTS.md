@@ -12,7 +12,7 @@ Agnostic workspace: objects, properties, views, records.
 
 - Do not import Feedcast domain (merchants, Enola, parcours, pipelines, `app_*`, `crm_*`).
 - Do not fork Feedcast production schema or copy prod data.
-- Do not merge this repo with `kecyf/lumi` (the agent). Lumi operates Lumi OS; they stay separate.
+- Workspace module of `kecyf/lumi`. Do not invent a sixth name. Do not `db push`. Do not overwrite `lumi/interface/`.
 - Do not add per-entity hubs (`PeopleHub`, `DealsHub`). One `GridHub` driven by schema.
 
 ## Layout
@@ -20,7 +20,7 @@ Agnostic workspace: objects, properties, views, records.
 ```
 src/lib/workspace/     kernel (schema, clauses, views, column catalog)
 src/components/workspace/   grid chrome
-supabase/              SQL schema (not wired to a project yet)
+supabase/              CLI project + kernel migrations (hosted: yyjyylhsubbvtqixbnqe)
 ```
 
 Prototype chrome was harvested from `feedcast-io/admin` (`feat/crm-airtable-foundation`) and stripped. When in doubt, rewrite rather than re-couple.

@@ -1,5 +1,5 @@
--- Lumi OS v0 — metadata + JSONB records.
--- Not applied to a hosted project yet. This is the contract.
+-- Human-readable contract for the Lumi OS kernel.
+-- The applied migration is supabase/migrations/20260904172446_workspace_kernel.sql.
 
 create table if not exists workspaces (
   id uuid primary key default gen_random_uuid(),
@@ -49,6 +49,8 @@ create table if not exists views (
   filters jsonb not null default '{}'::jsonb,
   visibility text not null default 'personal',
   owner_email text,
+  icon text,
+  icon_color text,
   position int not null default 0,
   created_at timestamptz not null default now()
 );
