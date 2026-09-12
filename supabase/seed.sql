@@ -1,0 +1,2 @@
+-- Optional local reset seed. Cloud agents seed through the Next.js persist layer
+-- so a linked empty project gets the demo workspace on first load.
