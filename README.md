@@ -1,51 +1,15 @@
-# Lumi OS
+# Lumi OS — archived
 
-Open-source workspace OS — objects, properties, views, records.
+This repo is **archived**. The workspace grid lives in [`kecyf/lumi`](https://github.com/kecyf/lumi) as `workspace/`.
 
-**Lumi** is the agent. **Lumi OS** is the workspace that agent (and any human) operates. Together: Notion + Airtable + Attio + Pipedrive, plus 2026-class agents (Cursor, Claude Code, Hermes).
+**Lumi** is one tool (brain + workspace + harness). The 2026-09-04 split that named a second product "Lumi OS" was reversed on 2026-09-08. Persist talks to the live Supabase `workspace_*` tables on project `lumi` (`yyjyylhsubbvtqixbnqe`). Do not `db push` from here.
 
-This is a pre-v1 prototype. The first slice is a schema-driven grid.
-
-## Status
-
-- Kernel types + JSONB schema draft
-- Grid chrome ported from a private Feedcast admin CRM prototype (generic layer only)
-- Demo objects (`people`, `companies`) on one schema-driven `GridHub` — no Feedcast schema, no production data
-
-## Stack
-
-Next.js (App Router) · TypeScript · Tailwind · shadcn/ui · JSONB-ready schema
-
-## Develop
-
-Requires [Bun](https://bun.sh) (`curl -fsSL https://bun.sh/install | bash`).
-
-```bash
-bun install
-bun run dev
-```
-
-Open `/` — demo workspace, People / Companies, saved views, filter / sort / columns, ⌘K.
-
-## Model
-
-```
-workspaces → objects → properties
-                    → records (values jsonb)
-                    → views   (filters / sorts / columns jsonb)
-```
-
-CRM (people, companies, deals) is a **template**, not the kernel. Feedcast can be a tenant later. So can a personal workspace.
-
-## Naming
-
-| Name | Meaning |
+| Was here | Now |
 |---|---|
-| Lumi | The agent (`kecyf/lumi`, `~/.lumi`) |
-| Lumi OS | This product (`kecyf/lumi-os`) |
+| This repo | [`kecyf/lumi`](https://github.com/kecyf/lumi) / `workspace/` |
+| Vision / decisions | [kvncyf-os/projects/lumi](https://github.com/kecyf/kvncyf-os/blob/main/projects/lumi/README.md) |
+| Historical `interface/` | Unchanged in `kecyf/lumi` — do not overwrite |
 
-Vision and decisions live in [kvncyf-os/projects/lumi-os](https://github.com/kecyf/kvncyf-os/blob/main/projects/lumi-os/README.md).
+Last useful land: [PR #4](https://github.com/kecyf/lumi-os/pull/4) (persist → live `workspace_*`, no kernel SQL). Draft [#3](https://github.com/kecyf/lumi-os/pull/3) is closed — do not merge it.
 
-## License
-
-MIT. Chrome was adapted from a private Feedcast admin prototype and stripped of domain code.
+MIT. Clone `kecyf/lumi` instead.
